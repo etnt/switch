@@ -1,35 +1,29 @@
-Project Skeleton for the switch app.
+# To create a Switch 
+curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe
 
-You should find in this directory:
+# To get the Switch status. Returns: A textual status table.
+# (tip: run this via the 'watch' command for an 'animated' experience)
+curl -H 'Content-Type: text/plain' -X 'GET' http://switch.redhoterlang.com/x/axe
 
-README : this file
-Makefile : simple make commands
-rebar : the Rebar build tool for Erlang applications
-rebar.config : configuration for Rebar
-start.sh : simple startup script for running switch
-/ebin
-  /switch.app : the Erlang app specification
-/src
-  /switch_app.erl : base module for the Erlang application
-  /switch_sup.erl : OTP supervisor for the application
-  /switch_resource.erl : a simple example Webmachine resource
-/priv
-  /dispatch.conf : the Webmachine URL-dispatching table
-  /www : a convenient place to put your static web content
+# To create a new Subscriber. Returns: <Ano>
+curl -v -H 'Content-Type: text/plain' -X 'POST' http://switch.redhoterlang.com/x/axe/subscriber
 
-You probably want to do one of a couple of things at this point:
+# To control the on/off-hook of the receiver for a particular Subscriber
+curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/offhook
+curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/offhook
 
-0. Build the skeleton application:
-   $ make
-   - or -
-   $ ./rebar compile
+# To control the tone generator and ringsignal in the Switch for a particular Subscriber
+curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/dialtone
+curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/dialtone
 
-1. Start up the skeleton application:
-   $ ./start.sh
+curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringtone
+curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringtone
 
-2. Change the basic application:
-   edit src/switch_resource.erl
+curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringsignal
+curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringsignal
 
-3. Add some new resources:
-   edit src/YOUR_NEW_RESOURCE.erl
-   edit priv/dispatch.conf
+# To (dis-)connect two subscribers
+curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/connect/Bno
+curl -v -H 'Content-Type: text/plain' -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/connect/Bno
+
+

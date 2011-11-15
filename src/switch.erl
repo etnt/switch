@@ -6,6 +6,7 @@
 -module(switch).
 -author('author <author@example.com>').
 -export([start/0, start_link/0, stop/0]).
+-export([to_binary/1]).
 
 ensure_started(App) ->
     case application:start(App) of
@@ -46,3 +47,9 @@ stop() ->
     application:stop(crypto),
     application:stop(inets),
     Res.
+
+to_binary(I) when is_integer(I) -> to_binary(integer_to_list(I));
+to_binary(L) when is_list(L)    -> list_to_binary(L);
+to_binary(B) when is_binary(B)  -> B.
+
+    
