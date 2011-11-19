@@ -1,10 +1,8 @@
-%% @author author <author@example.com>
-%% @copyright YYYY author.
-
-%% @doc Supervisor for the switch application.
+%% @author Torbjorn Tornkvist <tobbe@tornkvist.org>
+%% @copyright 2011 Torbjorn Tornkvist
+%% @doc A simple phone switch simulator.
 
 -module(switch_sup).
--author('author <author@example.com>').
 
 -behaviour(supervisor).
 

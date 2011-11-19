@@ -1,10 +1,9 @@
-%% @author author <author@example.com>
-%% @copyright YYYY author.
-
-%% @doc switch startup code
+%% @author Torbjorn Tornkvist <tobbe@tornkvist.org>
+%% @copyright 2011 Torbjorn Tornkvist
+%% @doc A simple phone switch simulator.
 
 -module(switch).
--author('author <author@example.com>').
+
 -export([start/0, start_link/0, stop/0]).
 -export([to_binary/1]).
 
