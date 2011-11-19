@@ -16,6 +16,9 @@ curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterla
 curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/dialtone
 curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/dialtone
 
+curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/busytone
+curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/busytone
+
 curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringtone
 curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringtone
 

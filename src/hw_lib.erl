@@ -1,19 +1,25 @@
 %% @author Torbjorn Tornkvist <tobbe@tornkvist.org>
 %% @copyright 2011 Torbjorn Tornkvist
-%% @doc A simple phone switch simulator.
+%% @doc API to the simple phone switch simulator.
 
 -module(hw_lib).
 
 -export([new_switch/1
 	 , new_switch/2
 	 , new_subscriber/1
+	 , connect/3
+	 , disconnect/3
+	 , offhook/2
+	 , onhook/2
 	 , show_switch/1
-	 , start_dialtone/1
-	 , stop_dialtone/1
-	 , start_ringsignal/1
-	 , stop_ringsignal/1
-	 , start_ringtone/1
-	 , stop_ringtone/1
+	 , start_busytone/2
+	 , stop_busytone/2
+	 , start_dialtone/2
+	 , stop_dialtone/2
+	 , start_ringsignal/2
+	 , stop_ringsignal/2
+	 , start_ringtone/2
+	 , stop_ringtone/2
 	 , trace_off/1
 	 , trace_on/1
 	]).
@@ -53,18 +59,70 @@ show_switch(#hw{switch_name = Name, switch_url = Url} = HW) ->
 	    Else
     end.
 
-new_subscriber(Hw) ->  tbd.
-start_dialtone(Hw) ->  tbd.
-stop_dialtone(Hw) ->  tbd.
-start_ringsignal(Hw) ->  tbd.
-stop_ringsignal(Hw) ->  tbd.
-start_ringtone(Hw) ->  tbd.
-stop_ringtone(Hw) ->  tbd.
+new_subscriber(#hw{switch_name = Name, switch_url = Url} = HW) ->
+    case result(HW, http(post, Url++Name++"/subscriber")) of
+	{ok, {200,Ano}} -> {ok,Ano};
+	Else            -> Else
+    end.
 
+connect(#hw{switch_name = Name, switch_url = Url} = HW, Ano, Bno) when is_list(Ano) andalso is_list(Bno) ->
+    curl(put, HW, Url++Name++"/"++Ano++"/connect/"++Bno).
+
+disconnect(#hw{switch_name = Name, switch_url = Url} = HW, Ano, Bno) when is_list(Ano) andalso is_list(Bno) ->
+    curl(delete, HW, Url++Name++"/"++Ano++"/connect/"++Bno).
+
+offhook(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    curl(put, HW, Url++Name++"/"++Ano++"/offhook").
+
+onhook(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    curl(delete, HW, Url++Name++"/"++Ano++"/offhook").
+
+start_busytone(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    start_tone(HW, Url++Name++"/"++Ano++"/busytone").
+
+stop_busytone(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    stop_tone(HW, Url++Name++"/"++Ano++"/busytone").
+
+start_dialtone(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    start_tone(HW, Url++Name++"/"++Ano++"/dialtone").
+
+stop_dialtone(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    stop_tone(HW, Url++Name++"/"++Ano++"/dialtone").
+
+start_ringsignal(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    start_tone(HW, Url++Name++"/"++Ano++"/ringsignal").
+
+stop_ringsignal(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    stop_tone(HW, Url++Name++"/"++Ano++"/ringsignal").
+
+start_ringtone(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    start_tone(HW, Url++Name++"/"++Ano++"/ringtone").
+
+stop_ringtone(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    stop_tone(HW, Url++Name++"/"++Ano++"/ringtone").
+
+
+%%
+%% H E L P E R S
+%%
+
+start_tone(HW, ToneUrl) ->
+    curl(put, HW, ToneUrl).
+
+stop_tone(HW, ToneUrl) ->
+    curl(delete, HW, ToneUrl).
+
+curl(Method, HW, ToneUrl) ->
+    case result(HW, http(Method, ToneUrl)) of
+	{ok, {200,_}} -> ok;
+	Else          -> Else
+    end.
 
 
 http(get, Url) ->
     http:request(get, {Url,[]}, [], []);
+http(delete, Url) ->
+    http:request(delete, {Url,[]}, [], []);
 http(Method, Url) ->
     Hdrs = [],
     Body = " ", % need 1 byte to get content-length header...grrr!!

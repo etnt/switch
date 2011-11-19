@@ -20,7 +20,7 @@
 -record(ctx, {
 	  ano,
           method,
-	  tone,     % "dialtone" | "ringtone" | "ringsignal"
+	  tone,     % "dialtone" | "busytone" | "ringtone" | "ringsignal"
           switch
          }).
           

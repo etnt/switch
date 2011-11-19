@@ -20,6 +20,7 @@
 
 -define(no_tone, "").
 -define(dialtone,    "dialtone").
+-define(busytone,    "busytone").
 -define(ringtone,    "ringtone").
 -define(ringsignal,  "ringsignal").
 
@@ -28,7 +29,7 @@
 -record(s ,{% ubscriber
 	  ano          = "",              % "<Ano>"
 	  status       = ?onhook,         % ?onhook | ?offhook
-	  tone         = ?no_tone,        % ?dialtone | ?ringtone
+	  tone         = ?no_tone,        % ?dialtone | ?busytone | ?ringtone
 	  connected_to = ?not_connected   % ?not_connected | "<Bno>"
 	 }).
 	
