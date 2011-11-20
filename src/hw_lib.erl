@@ -11,6 +11,7 @@
 	 , disconnect/3
 	 , offhook/2
 	 , onhook/2
+	 , reset/2
 	 , show_switch/1
 	 , start_busytone/2
 	 , stop_busytone/2
@@ -76,6 +77,9 @@ offhook(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) -
 
 onhook(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
     curl(delete, HW, Url++Name++"/"++Ano++"/offhook").
+
+reset(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
+    curl(put, HW, Url++Name++"/"++Ano++"/reset").
 
 start_busytone(#hw{switch_name = Name, switch_url = Url} = HW, Ano) when is_list(Ano) ->
     start_tone(HW, Url++Name++"/"++Ano++"/busytone").

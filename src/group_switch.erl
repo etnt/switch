@@ -2,12 +2,13 @@
 
 -export([start/1
          , init/1
-         , loop/3
+         , loop/4
 	 , connect/3
 	 , create_subscriber/1
 	 , disconnect/3
 	 , offhook/2
 	 , onhook/2
+	 , reset/2
 	 , status/1
 	 , start_tone/3
 	 , stop_tone/2
@@ -32,7 +33,8 @@
 	  tone         = ?no_tone,        % ?dialtone | ?busytone | ?ringtone
 	  connected_to = ?not_connected   % ?not_connected | "<Bno>"
 	 }).
-	
+
+-define(MAX_IDLE_TIME, 60*60*1000*24).  % 24 hours
 	
 %% ---
 %% API
@@ -62,6 +64,9 @@ connect(Switch, Ano, Bno) when is_list(Ano) andalso is_list(Bno) ->
 disconnect(Switch, Ano, Bno) when is_list(Ano) andalso is_list(Bno) ->
     call(Switch, {disconnect, Ano, Bno}).
 
+reset(Switch, Ano) when is_list(Ano) ->
+    call(Switch, {reset, Ano}).
+
 
 call(Switch, Msg) when is_list(Switch) ->
     call(list_to_atom(Switch), Msg);
@@ -88,55 +93,65 @@ init(Name) ->
     true = register(Name, self()),
     NextAno = 1234,
     Subscribers = [],
-    loop(Name, NextAno, Subscribers).
+    Tref = false,
+    loop(Name, Tref, NextAno, Subscribers).
 
-loop(Name, NextAno, Subscribers) ->
+loop(Name, Tref0, NextAno, Subscribers) ->
+    Tref = reset_timer(Tref0),
     receive
         stop -> 
 	    exit(normal);
 
 	{Who, create_subscriber} when is_pid(Who) ->
 	    Who ! {Name, {ok, NextAno}},
-	    ?MODULE:loop(Name, NextAno + 1, 
+	    ?MODULE:loop(Name, Tref, NextAno + 1, 
 			 add(#s{ano = integer_to_list(NextAno)}, 
 			     Subscribers));
 
 	{Who, status} when is_pid(Who) ->
 	    Who ! {Name, {ok, to_binary(format_status(Subscribers))}},
-	    ?MODULE:loop(Name, NextAno, Subscribers);
+	    ?MODULE:loop(Name, Tref, NextAno, Subscribers);
 
 	{Who, {connect, Ano, Bno}} when is_pid(Who) ->
 	    try 
 		NewSubscribers = do_connect(Ano, Bno, Subscribers),
 		Who ! {Name, ok},
-		?MODULE:loop(Name, NextAno, NewSubscribers)
+		?MODULE:loop(Name, Tref, NextAno, NewSubscribers)
 	    catch
 		throw:Emsg ->
 		Who ! {Name, {error, Emsg}},
-		?MODULE:loop(Name, NextAno, Subscribers)
+		?MODULE:loop(Name, Tref, NextAno, Subscribers)
 	    end;
 
 	{Who, {disconnect, Ano, Bno}} when is_pid(Who) ->
 	    try 
 		NewSubscribers = do_disconnect(Ano, Bno, Subscribers),
 		Who ! {Name, ok},
-		?MODULE:loop(Name, NextAno, NewSubscribers)
+		?MODULE:loop(Name, Tref, NextAno, NewSubscribers)
 	    catch
 		throw:Emsg ->
 		Who ! {Name, {error, Emsg}},
-		?MODULE:loop(Name, NextAno, Subscribers)
+		?MODULE:loop(Name, Tref, NextAno, Subscribers)
 	    end;
 
+	{Who, {reset, Ano}} when is_pid(Who) ->
+	    NewSubscribers = [S#s{status       = ?onhook,
+				  tone         = ?no_tone,
+				  connected_to = ?not_connected} 
+			      || S <- Subscribers,
+				 S#s.ano == Ano],
+	    Who ! {Name, ok},
+	    ?MODULE:loop(Name, Tref, NextAno, NewSubscribers);
 
 	{Who, {set_status, Ano, Status}} when is_pid(Who) ->
 	    try 
 		NewSubscribers = set_status(Ano, Status, Subscribers),
 		Who ! {Name, ok},
-		?MODULE:loop(Name, NextAno, NewSubscribers)
+		?MODULE:loop(Name, Tref, NextAno, NewSubscribers)
 	    catch
 		throw:Emsg ->
 		Who ! {Name, {error, Emsg}},
-		?MODULE:loop(Name, NextAno, Subscribers)
+		?MODULE:loop(Name, Tref, NextAno, Subscribers)
 	    end;
 
 
@@ -144,15 +159,15 @@ loop(Name, NextAno, Subscribers) ->
 	    try 
 		NewSubscribers = set_tone(Ano, Tone, Subscribers),
 		Who ! {Name, ok},
-		?MODULE:loop(Name, NextAno, NewSubscribers)
+		?MODULE:loop(Name, Tref, NextAno, NewSubscribers)
 	    catch
 		throw:Emsg ->
 		Who ! {Name, {error, Emsg}},
-		?MODULE:loop(Name, NextAno, Subscribers)
+		?MODULE:loop(Name, Tref, NextAno, Subscribers)
 	    end;
 
         _    -> 
-	    ?MODULE:loop(Name, NextAno, Subscribers)
+	    ?MODULE:loop(Name, Tref, NextAno, Subscribers)
     end.
 
 %% -------
@@ -244,5 +259,15 @@ set_tone(Ano, Tone, [S|Subscribers]) ->
 set_tone(_Ano, _Tone, []) ->
     throw(<<"no Ano found">>).
 
-
+%%%
+%%% T I M E R   H A N D L I N G
+%%%
+    
+reset_timer(false) ->
+    {ok, Tref} = timer:send_after(?MAX_IDLE_TIME, goodbye),
+    Tref;
+reset_timer(Tref0) ->
+    timer:cancel(Tref0),
+    {ok, Tref} = timer:send_after(?MAX_IDLE_TIME, goodbye),
+    Tref.
     
