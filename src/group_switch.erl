@@ -97,9 +97,10 @@ init(Name) ->
     loop(Name, Tref, NextAno, Subscribers).
 
 loop(Name, Tref0, NextAno, Subscribers) ->
+    io:format("~s: ~p~n",[Name, Subscribers]),
     Tref = reset_timer(Tref0),
     receive
-        stop -> 
+        goodbye -> 
 	    exit(normal);
 
 	{Who, create_subscriber} when is_pid(Who) ->
@@ -135,11 +136,13 @@ loop(Name, Tref0, NextAno, Subscribers) ->
 	    end;
 
 	{Who, {reset, Ano}} when is_pid(Who) ->
-	    NewSubscribers = [S#s{status       = ?onhook,
-				  tone         = ?no_tone,
-				  connected_to = ?not_connected} 
-			      || S <- Subscribers,
-				 S#s.ano == Ano],
+	    NewSubscribers = 
+		lists:map(fun(#s{ano = N} = S) when N == Ano ->
+				  S#s{status       = ?onhook,
+				      tone         = ?no_tone,
+				      connected_to = ?not_connected};
+			     (S) -> S
+			  end, Subscribers),
 	    Who ! {Name, ok},
 	    ?MODULE:loop(Name, Tref, NextAno, NewSubscribers);
 
