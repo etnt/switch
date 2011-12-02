@@ -204,12 +204,6 @@ do_connect(Ano, Bno, Subscribers) ->
     lists:map(F, Subscribers).
 
 do_disconnect(Ano, Bno, Subscribers) ->
-    %% assert that the subscribers are connected
-    [true,true] =
-	[true || #s{ano = No, connected_to = C} <- Subscribers,
-		 ((Ano == No andalso Bno == C) orelse
-		  (Bno == No andalso Ano == C))],
-    
     F = fun(#s{ano = X} = S) when X == Ano orelse X == Bno -> 
 		S#s{connected_to = ?not_connected};
 	   (Subscriber) -> 
