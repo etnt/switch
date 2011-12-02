@@ -25,6 +25,27 @@
 	 , trace_on/1
 	]).
 
+-ignore_xref([new_switch/1
+              , new_switch/2
+              , new_subscriber/1
+              , connect/3
+              , disconnect/3
+              , offhook/2
+              , onhook/2
+              , reset/2
+              , show_switch/1
+              , start_busytone/2
+              , stop_busytone/2
+              , start_dialtone/2
+              , stop_dialtone/2
+              , start_ringsignal/2
+              , stop_ringsignal/2
+              , start_ringtone/2
+              , stop_ringtone/2
+              , trace_off/1
+              , trace_on/1
+             ]).
+
 -record(hw, {
 	  switch_name = "",
 	  switch_url  = "http://switch.redhoterlang.com/x/",
@@ -124,13 +145,13 @@ curl(Method, HW, ToneUrl) ->
 
 
 http(get, Url) ->
-    http:request(get, {Url,[]}, [], []);
+    httpc:request(get, {Url,[]}, [], []);
 http(delete, Url) ->
-    http:request(delete, {Url,[]}, [], []);
+    httpc:request(delete, {Url,[]}, [], []);
 http(Method, Url) ->
     Hdrs = [],
     Body = " ", % need 1 byte to get content-length header...grrr!!
-    http:request(Method, {Url, Hdrs, "text/plain", Body}, [], []).
+    httpc:request(Method, {Url, Hdrs, "text/plain", Body}, [], []).
 
 
 result(#hw{trace = false}, {ok,{{_,RC,_}, _Hdrs, Body}}) ->

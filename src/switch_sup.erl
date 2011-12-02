@@ -8,6 +8,7 @@
 
 %% External exports
 -export([start_link/0, upgrade/0]).
+-ignore_xref([start_link/0, upgrade/0]).
 
 %% supervisor callbacks
 -export([init/1]).

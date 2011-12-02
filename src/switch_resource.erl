@@ -12,6 +12,16 @@
          , to_text/2
         ]).
 
+-ignore_xref([init/1
+              , allowed_methods/2
+              , content_types_accepted/2
+              , content_types_provided/2
+              , malformed_request/2
+              , resource_exists/2
+              , to_text/2
+              , ping/2
+             ]).
+
 -include_lib("webmachine/include/webmachine.hrl").
 
 -record(ctx, {
