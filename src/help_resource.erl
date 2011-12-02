@@ -42,10 +42,13 @@ to_text(ReqData, State) ->
 
 help_text() ->
     L =[
+	"\n# WELCOME TO THE PHONE SWITCH SIMULATOR\n"
+	"# feel free to play around with the commands below\n\n"
+	"# Just to shorten the curl commands below\n"
         "export switch=\"http://switch.redhoterlang.com\"\n"
         "export copts=-\"s -H 'Content-Type: text/plain'\"\n"
         "\n"
-        "# To create a Switch\n"
+        "# To create a Switch named: axe\n"
         "curl ${copts} -d \"\" -X 'PUT' ${switch}/x/axe\n"
         "\n"
         "# To get the Switch status. Returns: A textual status table.\n"

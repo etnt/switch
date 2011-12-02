@@ -6,7 +6,8 @@
     <p>The <a href="#">Phone Switch Simulator</a> is intended to be used in a (fun) programming exercise.
     </p>
     <p>It provides a simple (silly?) abstraction of a telephone switch. 
-      By using the REST like HTTP interface you can:
+      <br />
+      By using a REST like HTTP interface you can:
     </p>
     <ul>
       <li>Create your own switch (wow... :-)</li>
@@ -17,36 +18,43 @@
 	regular phone call.
       </li>
     </ul>
-    <p>The following curl commands describes what you can do:
+    <p>The following curl commands describes what you can do (see also: http://switch.redhoterlang.com/x/help ):
     </p>
     <pre>
-# To create a Switch (with the name: axe)
-curl -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe
+# Just to shorten the curl commands below
+export switch="http://switch.redhoterlang.com"
+export copts=-"s -H 'Content-Type: text/plain'"
+
+# To create a Switch named: axe
+curl ${copts} -d "" -X 'PUT' ${switch}/x/axe
 
 # To get the Switch status. Returns: A textual status table.
 # (tip: run this via the 'watch' command for an 'animated' experience)
-curl -H 'Content-Type: text/plain' -X 'GET' http://switch.redhoterlang.com/x/axe
+curl ${copts} -X 'GET' ${switch}/x/axe
 
 # To create a new Subscriber. Returns: <Ano>
-curl -H 'Content-Type: text/plain' -X 'POST' http://switch.redhoterlang.com/x/axe/subscriber
+curl ${copts} -X 'POST' ${switch}/x/axe/subscriber
 
 # To control the on/off-hook of the receiver for a particular Subscriber
-curl -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/offhook
-curl -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/offhook
+curl ${copts} -d "" -X 'PUT' ${switch}/x/axe/Ano/offhook
+curl ${copts} -d "" -X 'DELETE' ${switch}/x/axe/Ano/offhook
 
-# To control the tone generator and ring signal in the Switch for a particular Subscriber
-curl -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/dialtone
-curl -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/dialtone
+# To control the tone generator and ringsignal in the Switch for a particular Subscriber
+curl ${copts} -d "" -X 'PUT' ${switch}/x/axe/Ano/dialtone
+curl ${copts} -d "" -X 'DELETE' ${switch}/x/axe/Ano/dialtone
 
-curl -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringtone
-curl -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringtone
+curl ${copts} -d "" -X 'PUT' ${switch}/x/axe/Ano/busytone
+curl ${copts} -d "" -X 'DELETE' ${switch}/x/axe/Ano/busytone
 
-curl -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringsignal
-curl -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringsignal
+curl ${copts} -d "" -X 'PUT' ${switch}/x/axe/Ano/ringtone
+curl ${copts} -d "" -X 'DELETE' ${switch}/x/axe/Ano/ringtone
+
+curl ${copts} -d "" -X 'PUT' ${switch}/x/axe/Ano/ringsignal
+curl ${copts} -d "" -X 'DELETE' ${switch}/x/axe/Ano/ringsignal
 
 # To (dis-)connect two subscribers
-curl -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/connect/Bno
-curl -H 'Content-Type: text/plain' -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/connect/Bno
+curl ${copts} -d "" -X 'PUT' ${switch}/x/axe/Ano/connect/Bno
+curl ${copts} -X 'DELETE' ${switch}/x/axe/Ano/connect/Bno
     </pre>
     <p>Now it is up to you to write a client program that simulates
       a couple of telephones that connected to the switch. As a little
@@ -56,9 +64,12 @@ curl -H 'Content-Type: text/plain' -X 'DELETE' http://switch.redhoterlang.com/x/
     </p>
     <img src=/phone_state_event.jpg></img>
     <p>If you want to write the code in Erlang, then download the
-      <a href="#">Starter Kit</a>. With the Starter Kit you get a program
-      where the Idle State has been written. You have access to a little
-      helper library that can talk to the switch. The rest is up to you.
+      <i>Starter Kit</i>, which consists of two files: 
+      <a href="/phone.erl">phone.erl</a> and <a href="/hw_lib.erl">hw_lib.erl</a>. 
+      The first file is an embryo of the your phone control software
+      where only the Idle State has been written. In the second file, you 
+      have access to a little helper library that can talk to the switch,
+      hiding the REST protocol. The rest is up to you.
     </p>
     <p>When you have succeeded the result could look something like in the
     video below:
