@@ -1,32 +1,32 @@
 # To create a Switch 
-curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe
+curl -s -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe
 
 # To get the Switch status. Returns: A textual status table.
 # (tip: run this via the 'watch' command for an 'animated' experience)
-curl -H 'Content-Type: text/plain' -X 'GET' http://switch.redhoterlang.com/x/axe
+curl -s -H 'Content-Type: text/plain' -X 'GET' http://switch.redhoterlang.com/x/axe
 
 # To create a new Subscriber. Returns: <Ano>
-curl -v -H 'Content-Type: text/plain' -X 'POST' http://switch.redhoterlang.com/x/axe/subscriber
+curl -s -H 'Content-Type: text/plain' -X 'POST' http://switch.redhoterlang.com/x/axe/subscriber
 
 # To control the on/off-hook of the receiver for a particular Subscriber
-curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/offhook
-curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/offhook
+curl -s -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/offhook
+curl -s -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/offhook
 
 # To control the tone generator and ringsignal in the Switch for a particular Subscriber
-curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/dialtone
-curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/dialtone
+curl -s -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/dialtone
+curl -s -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/dialtone
 
-curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/busytone
-curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/busytone
+curl -s -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/busytone
+curl -s -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/busytone
 
-curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringtone
-curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringtone
+curl -s -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringtone
+curl -s -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringtone
 
-curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringsignal
-curl -v -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringsignal
+curl -s -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/ringsignal
+curl -s -H 'Content-Type: text/plain' -d "" -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/ringsignal
 
 # To (dis-)connect two subscribers
-curl -v -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/connect/Bno
-curl -v -H 'Content-Type: text/plain' -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/connect/Bno
+curl -s -H 'Content-Type: text/plain' -d "" -X 'PUT' http://switch.redhoterlang.com/x/axe/Ano/connect/Bno
+curl -s -H 'Content-Type: text/plain' -X 'DELETE' http://switch.redhoterlang.com/x/axe/Ano/connect/Bno
 
 
