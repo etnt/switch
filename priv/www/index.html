@@ -69,8 +69,68 @@ curl ${copts} -X 'DELETE' ${switch}/x/axe/Ano/connect/Bno
       The first file is an embryo of the your phone control software
       where only the Idle State has been written. In the second file, you 
       have access to a little helper library that can talk to the switch,
-      hiding the REST protocol. The rest is up to you.
+      hiding the REST protocol.
     </p>
+    <pre>
+%%% LET'S START ERLANG AND SEE HOW WE CAN COMMUNICATE 
+%%% WITH switch.redhoterlang.com USING THE hw_lib.erl code. 
+
+$ erl -pa ./ebin
+Erlang R14B03 Klarna (erts-5.8.4) [source] [64-bit] [smp:8:8] [rq:8] [async-threads:0] [kernel-poll:false]
+
+Eshell V5.8.4  (abort with ^G)
+1> {ok,Hw} = hw_lib:new_switch("alice").
+{ok,{hw,"alice","http://switch.redhoterlang.com/x/",false}}
+2> hw_lib:show_switch(Hw).
+Ano             Status          Tone            ConnectedTo
+
+ok
+3> hw_lib:new_subscriber(Hw).
+{ok,"1234"}
+4> hw_lib:new_subscriber(Hw).
+{ok,"1235"}
+5> hw_lib:new_subscriber(Hw).
+{ok,"1236"}
+6> hw_lib:show_switch(Hw).
+Ano             Status          Tone            ConnectedTo
+1234            onhook
+1235            onhook
+1236            onhook
+ok
+7> hw_lib:offhook(Hw,"1235").
+{ok,{201,[]}}
+8> hw_lib:show_switch(Hw).
+Ano             Status          Tone            ConnectedTo
+1234            onhook
+1235            offhook
+1236            onhook
+ok
+9> hw_lib:onhook(Hw,"1235").
+ok
+10> hw_lib:show_switch(Hw).
+Ano             Status          Tone            ConnectedTo
+1234            onhook
+1235            onhook
+1236            onhook
+ok
+
+%%% NOW IF WE TRY END RUN OUR PHONES, WHAT HAPPENDS?
+
+11> phone:start(Hw,"1234").
+<0.63.0>
+12> phone:start(Hw,"1235").
+<0.66.0>
+13> phone:start(Hw,"1236").
+<0.68.0>
+14> phone:offhook("1236").   
+offhook
+15> 
+=ERROR REPORT==== 23-Feb-2012::12:54:46 ===
+Error in process <0.68.0> with exit value: {undef,[{phone,wait_for_digits,[{store,"1236",undefined,phone_1236,undefined,{hw,"alice","http://switch.redhoterlang.com/x/",false}}]}]}
+
+%%% OF COURSE IT CRASHES SINCE THE CODE IS MISSING!
+%%% IT IS NOW UP TO YOU TO WRITE THE MISSING CODE IN phone.erl
+    </pre>
     <p>When you have succeeded the result could look something like in the
     video below:
     </p>
