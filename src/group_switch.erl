@@ -112,7 +112,9 @@ loop(Name, Tref0, NextAno, Subscribers) ->
 	    exit(normal);
 
         {Who, stop} when is_pid(Who) -> 
+	    %%error_logger:info_msg("loop:stop ~p~n",[self()]),
 	    Who ! {Name, ok},
+	    erlang:unregister(Name), % strange that we need this!?
 	    exit(normal);
 
 	{Who, create_subscriber} when is_pid(Who) ->

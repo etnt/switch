@@ -19,10 +19,20 @@ start_test_server() ->
 
 stop_test_server(_) ->
   Res = group_switch:stop(?server_name),
-  timer:sleep(10),
-  error_logger:info_msg("........ ~p~n",[whereis(?server_name)]),
-  undefined = whereis(?server_name),
+  wait(10),
   Res.
+
+%% erlang:unregister/1 in group_switch.erl seem to solve this!?
+wait(0) -> exit(helvete); 
+wait(N) ->
+  case whereis(?server_name) of
+    Pid when is_pid(Pid) ->
+      error_logger:info_msg("wait: ~p~n",[Pid]),
+      erlang:yield(),
+      wait(N-1);
+    undefined ->
+      ok
+  end.
   
 
 setup_subscribers() ->
@@ -184,43 +194,52 @@ dis_connect_test_() ->
     end
    }.
 
-reset_test_arne() ->
+reset_test_() ->
   { setup, fun setup_subscribers/0, fun stop_test_server/1,
     fun(Dict) ->
 	{inorder,
 	 [ ?_assertEqual(ok, 
-			 group_switch:start_tone(?server_name, 
-						 orddict:fetch(subscriber_1,Dict), 
-						 ?dialtone))
-
-	 , ?_assertEqual(ok, 
-	 		 verify_dialtone(orddict:fetch(subscriber_1,Dict)))
-
-	 , ?_assertEqual(ok, 
 	 		 group_switch:offhook(?server_name, 
 	 				      orddict:fetch(subscriber_1,Dict)))
 
 	 , ?_assertEqual(ok, 
 	 		 verify_offhook(orddict:fetch(subscriber_1,Dict)))
 
-	 ,?_assertEqual(ok, 
-	 		group_switch:connect(?server_name, 
-	 				     orddict:fetch(subscriber_1,Dict),
-	 				     orddict:fetch(subscriber_2,Dict)))
+	 , ?_assertEqual(ok, 
+	 		 group_switch:offhook(?server_name, 
+	 				      orddict:fetch(subscriber_2,Dict)))
+
+	 , ?_assertEqual(ok, 
+	 		 verify_offhook(orddict:fetch(subscriber_2,Dict)))
+
+	 , ?_assertEqual(ok, 
+			 group_switch:connect(?server_name, 
+					      orddict:fetch(subscriber_1,Dict),
+					      orddict:fetch(subscriber_2,Dict)))
 
 	 , ?_assertEqual(ok, 
 	 		 verify_connected(orddict:fetch(subscriber_1,Dict),
 	 				  orddict:fetch(subscriber_2,Dict)))
 
-	 ,?_assertEqual(ok, 
-	 		group_switch:reset(?server_name, 
-	 				   orddict:fetch(subscriber_1,Dict)))
+	 , ?_assertEqual(ok, 
+			 group_switch:reset(?server_name, 
+					    orddict:fetch(subscriber_1,Dict)))
+
+	 , ?_assertEqual(ok, 
+			 group_switch:reset(?server_name, 
+					    orddict:fetch(subscriber_2,Dict)))
+
+	 , ?_assertEqual(ok, 
+	 		 verify_onhook(orddict:fetch(subscriber_1,Dict)))
+
+	 , ?_assertEqual(ok, 
+	 		 verify_onhook(orddict:fetch(subscriber_2,Dict)))
 
 	 , ?_assertEqual(ok, 
 	 		 verify_no_tone(orddict:fetch(subscriber_1,Dict)))
 
 	 , ?_assertEqual(ok, 
-	 		 verify_onhook(orddict:fetch(subscriber_1,Dict)))
+	 		 verify_no_tone(orddict:fetch(subscriber_2,Dict)))
 
 	 , ?_assertEqual(not_connected, 
 	 		 verify_connected(orddict:fetch(subscriber_1,Dict),
@@ -236,7 +255,8 @@ verify_offhook(StrAno) -> verify_hook(StrAno, "offhook").
 verify_hook(StrAno, Hook) ->
   case parse_status() of
     [_Header,[StrAno,Hook|_]|_] -> ok;
-    _                           -> not_onhook
+    [_Header,_,[StrAno,Hook|_]|_] -> ok;
+    _                           -> wrong_hook
   end.
 
 verify_dialtone(StrAno) -> verify_tone(StrAno, ?dialtone).
@@ -245,9 +265,11 @@ verify_no_tone(StrAno)  -> verify_tone(StrAno, ?no_tone).
 
 verify_tone(StrAno, Tone) ->
   case parse_status() of
-    [_Header,[StrAno,_Hook,Tone|_]|_]                  -> ok;
-    [_Header,[StrAno,_Hook|_]|_] when Tone == ?no_tone -> ok;
-    _                                                  -> wrong_tone
+    [_Header,[StrAno,_Hook,Tone|_]|_]                    -> ok;
+    [_Header,_,[StrAno,_Hook,Tone|_]|_]                  -> ok;
+    [_Header,[StrAno,_Hook|_]|_] when Tone == ?no_tone   -> ok;
+    [_Header,_,[StrAno,_Hook|_]|_] when Tone == ?no_tone -> ok;
+    _                                                    -> wrong_tone
   end.
   
 
