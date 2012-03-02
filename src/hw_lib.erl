@@ -145,13 +145,13 @@ curl(Method, HW, ToneUrl) ->
 
 
 http(get, Url) ->
-    http:request(get, {Url,[]}, [], []);
+    httpc:request(get, {Url,[]}, [], []);
 http(delete, Url) ->
-    http:request(delete, {Url,[]}, [], []);
+    httpc:request(delete, {Url,[]}, [], []);
 http(Method, Url) ->
     Hdrs = [],
     Body = " ", % need 1 byte to get content-length header...grrr!!
-    http:request(Method, {Url, Hdrs, "text/plain", Body}, [], []).
+    httpc:request(Method, {Url, Hdrs, "text/plain", Body}, [], []).
 
 
 result(#hw{trace = false}, {ok,{{_,RC,_}, _Hdrs, Body}}) ->

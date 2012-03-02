@@ -1,7 +1,7 @@
 ERL ?= erl
 APP := switch
 
-.PHONY: deps
+.PHONY: deps test
 
 all: deps
 	@./rebar compile
@@ -15,14 +15,14 @@ clean:
 distclean: clean
 	@./rebar delete-deps
 
-test: local_clean
-	@./rebar eunit skip_app=mochiweb,webmachine
+test:
+	@./rebar eunit skip_apps=mochiweb,webmachine
 
 local_clean:
 	@rm ./ebin/*
 
 xref: all
-	@./rebar xref skip_app=mochiweb,webmachine
+	@./rebar xref skip_apps=mochiweb,webmachine
 
 docs:
 	@erl -noshell -run edoc_run application '$(APP)' '"."' '[]'

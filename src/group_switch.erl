@@ -1,7 +1,7 @@
 -module(group_switch).
 
 -export([start/1
-         , init/1
+	 , stop/1
          , loop/4
 	 , connect/3
 	 , create_subscriber/1
@@ -87,20 +87,32 @@ call(Switch, Msg) ->
 start(Name) when is_list(Name) ->
     start(list_to_atom(Name));
 start(Name) when is_atom(Name) ->
-    spawn(?MODULE, init, [Name]).
+    Self = self(),
+    Pid = spawn(fun() -> init(Name, Self) end),
+    receive {Pid, started} -> ok end.
 
-init(Name) ->
+stop(Name) when is_list(Name)->
+    stop(list_to_atom(Name));
+stop(Name) when is_atom(Name)->
+    call(Name, stop).
+    
+
+init(Name, Starter) when is_pid(Starter) ->
     true = register(Name, self()),
+    Starter ! {self(), started},      % handshake!
     NextAno = 1234,
     Subscribers = [],
     Tref = false,
     loop(Name, Tref, NextAno, Subscribers).
 
 loop(Name, Tref0, NextAno, Subscribers) ->
-    io:format("~s: ~p~n",[Name, Subscribers]),
     Tref = reset_timer(Tref0),
     receive
         goodbye -> 
+	    exit(normal);
+
+        {Who, stop} when is_pid(Who) -> 
+	    Who ! {Name, ok},
 	    exit(normal);
 
 	{Who, create_subscriber} when is_pid(Who) ->
@@ -119,21 +131,15 @@ loop(Name, Tref0, NextAno, Subscribers) ->
 		Who ! {Name, ok},
 		?MODULE:loop(Name, Tref, NextAno, NewSubscribers)
 	    catch
-		throw:Emsg ->
+		_:Emsg ->
 		Who ! {Name, {error, Emsg}},
 		?MODULE:loop(Name, Tref, NextAno, Subscribers)
 	    end;
 
 	{Who, {disconnect, Ano, Bno}} when is_pid(Who) ->
-	    try 
-		NewSubscribers = do_disconnect(Ano, Bno, Subscribers),
-		Who ! {Name, ok},
-		?MODULE:loop(Name, Tref, NextAno, NewSubscribers)
-	    catch
-		throw:Emsg ->
-		Who ! {Name, {error, Emsg}},
-		?MODULE:loop(Name, Tref, NextAno, Subscribers)
-	    end;
+	    NewSubscribers = do_disconnect(Ano, Bno, Subscribers),
+	    Who ! {Name, ok},
+	    ?MODULE:loop(Name, Tref, NextAno, NewSubscribers);
 
 	{Who, {reset, Ano}} when is_pid(Who) ->
 	    NewSubscribers = 
