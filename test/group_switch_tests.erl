@@ -1,4 +1,4 @@
--module(group_switch_test).
+-module(group_switch_tests).
 -export([]).
 
 -include_lib("eunit/include/eunit.hrl").
@@ -33,7 +33,6 @@ wait(N) ->
     undefined ->
       ok
   end.
-  
 
 setup_subscribers() ->
   _Pid = start_test_server(),
@@ -57,53 +56,55 @@ create_subscribers_test_() ->
    }.
 
 start_stop_tone_test_() ->
-  { setup, fun setup_subscribers/0, fun stop_test_server/1,
+  { "Make sure that we can start/stop a Tone",
+    setup, fun setup_subscribers/0, fun stop_test_server/1,
     fun(Dict) ->
+        Subscriber = orddict:fetch(subscriber_1,Dict),
 	{inorder,
-	 [ ?_assertEqual(ok, 
-			 group_switch:start_tone(?server_name, 
-						 orddict:fetch(subscriber_1,Dict), 
-						 ?dialtone))
+	 [ start_stop_a_tone(Subscriber, ?dialtone)
 
-	 , ?_assertEqual(ok, 
-			 verify_dialtone(orddict:fetch(subscriber_1,Dict)))
+           , start_stop_a_tone(Subscriber, ?busytone)
 
+           , start_stop_a_tone(Subscriber, ?ringtone)
 
-	 , ?_assertEqual(ok, 
-			 group_switch:stop_tone(?server_name, 
-						orddict:fetch(subscriber_1,Dict)))
-
-	 , ?_assertEqual(ok, 
-			 group_switch:start_tone(?server_name, 
-						 orddict:fetch(subscriber_1,Dict), 
-						 ?dialtone))
-
-	 , ?_assertEqual(ok, 
-			 verify_dialtone(orddict:fetch(subscriber_1,Dict)))
-
-	 , ?_assertMatch({error,_}, 
-			 group_switch:start_tone(?server_name, 
-						 orddict:fetch(subscriber_1,Dict), 
-						 ?busytone))
-
-	 , ?_assertEqual(ok, 
-			 verify_dialtone(orddict:fetch(subscriber_1,Dict)))
-
-	 , ?_assertEqual(ok, 
-			 group_switch:stop_tone(?server_name, 
-						orddict:fetch(subscriber_1,Dict)))
-	   
-	 , ?_assertEqual(ok, 
-			 group_switch:start_tone(?server_name, 
-						 orddict:fetch(subscriber_1,Dict), 
-						 ?busytone))
-
-	 , ?_assertEqual(ok, 
-			 verify_busytone(orddict:fetch(subscriber_1,Dict)))
+           , fail_to_set_two_tones(Subscriber, ?dialtone, ?busytone)
 
 	  ]}
     end
    }.
+
+start_stop_a_tone(Subscriber, Tone) ->
+  { "Start and stop a Tone.",
+    [
+     ?_assertEqual(ok, group_switch:start_tone(?server_name, Subscriber, Tone) )
+
+     , ?_assertEqual(ok, verify_tone(Subscriber, Tone) )
+
+     , ?_assertEqual(ok, group_switch:stop_tone(?server_name, Subscriber) )
+
+     , ?_assertEqual(ok, verify_tone(Subscriber, ?no_tone) )
+
+    ]}.
+
+fail_to_set_two_tones(Subscriber, Tone1, Tone2) ->
+  { "Trying to set a tone without first turning it off should fail.",
+    [
+     ?_assertEqual(ok, group_switch:start_tone(?server_name, Subscriber, Tone1) )
+
+     , ?_assertEqual(ok, verify_tone(Subscriber, Tone1) )
+
+     , ?_assertMatch({error,_},
+                     group_switch:start_tone(?server_name, Subscriber, Tone2) )
+
+     %% Tone1 is still there?
+     , ?_assertEqual(ok, verify_tone(Subscriber, Tone1) )
+
+     , ?_assertEqual(ok, group_switch:stop_tone(?server_name, Subscriber) )
+
+     , ?_assertEqual(ok, verify_tone(Subscriber, ?no_tone) )
+
+    ]}.
+
 
 on_off_hook_test_() ->
   { setup, fun setup_subscribers/0, fun stop_test_server/1,
@@ -259,8 +260,8 @@ verify_hook(StrAno, Hook) ->
     _                           -> wrong_hook
   end.
 
-verify_dialtone(StrAno) -> verify_tone(StrAno, ?dialtone).
-verify_busytone(StrAno) -> verify_tone(StrAno, ?busytone).
+%%verify_dialtone(StrAno) -> verify_tone(StrAno, ?dialtone).
+%%verify_busytone(StrAno) -> verify_tone(StrAno, ?busytone).
 verify_no_tone(StrAno)  -> verify_tone(StrAno, ?no_tone).
 
 verify_tone(StrAno, Tone) ->
